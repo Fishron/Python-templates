@@ -1,0 +1,90 @@
+def buildst(n):
+    for i in range(n,2*n):
+        st[i]=[0,elem(i-n)]
+    for i in range(n-1,0,-1):
+        st[i]=[0,merge(st[i<<1][1],st[i<<1|1][1])]
+def apply(i,val):
+    #print(f"applying val {val} on i {i}")
+    #print("before applying",st)
+    st[i][1][0]+=val
+    if i<n:st[i][0]+=val
+    #print("after applying",st)
+def maintainDown(l,r):
+    s=n.bit_length()
+    l+=n
+    r+=n
+    k=1<<(s-1) #segment length
+    while s>0:
+        for i in range(l>>s,(r>>s)+1):
+            if i==0:continue
+            debt,val=st[i]
+            if debt:
+                apply(i<<1,debt)
+                apply(i<<1|1,debt)
+                st[i][0]=0
+        k>>=1
+        s-=1
+def maintainUp(l,r):
+    l+=n
+    r+=n
+    k=2 #length of segment
+    while l>1:
+        l>>=1
+        r>>=1
+        for i in range(r,l-1,-1):
+            if st[i][0]: #debt is taken into account there if it has not been propagated
+                apply(i<<1,st[i][0])
+                apply(i<<1|1,st[i][0])
+                st[i][0]=0
+            st[i][1]=merge(st[i<<1][1],st[i<<1|1][1])
+            #other way to take debt into account st[i][1][0]+=st[i][0]
+        k<<=1
+def value(l,r):
+    r+=1
+    if r<l:return neutral
+    maintainDown(l,l)
+    maintainDown(r-1,r-1)
+    
+    resl=resr=neutral;l+=n;r+=n
+    while l<r:
+        #print(l,r)
+        if l&1:
+            #print("selected l",l)
+            resl=merge(resl,st[l][1])
+            l+=1
+        if r&1:
+            r-=1
+            if r:
+                #print("selected r",r)
+                resr=merge(st[r][1],resr)
+        l>>=1
+        r>>=1
+    return merge(resl,resr)
+def updatest(l,r,val):
+    r+=1
+    if r<l:return
+    maintainDown(l,l)
+    maintainDown(r-1,r-1)
+    #print("st after down propa",st)
+    l0=l;r0=r
+    l+=n;r+=n
+    k=1
+    while l<r:
+        #print("l and r",l,r)
+        if l&1:
+            #print("selected l",l)
+            apply(l,val)
+            #print("st after application of l",st)
+            l+=1
+        if r&1:
+            r-=1
+            if r:
+                #print("selected r",r)
+                apply(r,val)
+                #print("st after application of r",st)
+        l>>=1
+        r>>=1
+        k<<=1
+    #print("st after modif but before up propa",st)
+    maintainUp(l0,l0)
+    maintainUp(r0-1,r0-1)

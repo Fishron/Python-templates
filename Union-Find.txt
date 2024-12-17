@@ -1,0 +1,17 @@
+    dad=[0]+[i+1 for i in range(n)]
+    rank=[0 for i in range(n+1)]
+    size=[1 for i in range(n+1)]
+
+    def unioncolor(x,y):
+        rx,ry=findcolor(x),findcolor(y)
+        if rank[rx]>rank[ry]:
+            dad[ry]=rx
+            size[rx]+=size[ry]
+        else:
+            dad[rx]=ry
+            size[ry]+=size[rx]
+            if rank[rx]==rank[ry]:
+                rank[ry]+=1
+    def findcolor(x):
+        if dad[x]!=x:dad[x]=findcolor(dad[x])
+        return dad[x]

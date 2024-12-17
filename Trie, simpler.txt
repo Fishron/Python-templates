@@ -1,0 +1,8 @@
+        g = {}
+        for i in range(len(words)):
+            node = g
+            for c in words[i]:
+                if c not in node:
+                    node[c] = {}
+                node = node[c]
+            node['end'] = words[i]

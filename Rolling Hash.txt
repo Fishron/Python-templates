@@ -1,0 +1,12 @@
+M=2**63-1
+def f(x):
+    return ord(x)-ord("a")+428
+def radl(x,c,p):
+    x+=c*p
+    x%=M
+    return x
+def radr(x,c):
+    x*=27
+    x+=c
+    x%=M
+    return x

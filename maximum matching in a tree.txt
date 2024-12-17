@@ -1,0 +1,30 @@
+def match(root):
+    ma=[]
+    q=[(root,root)]
+    h=[]
+    while q:
+        x,lx=q.pop()
+        s[x]=1
+        h+=[(x,lx)]
+        for v in g[x]:
+            if v!=lx:
+                q.append((v,x))
+    o=[[0]*2 for _ in range(n)]
+    for e,le in h[::-1]:
+        if len(g[e])>1 or e==root:
+            
+            o[e][0]=sum(max(o[v][1],o[v][0])for v in g[e]if v!=le)
+            best=0
+            winner=-1
+            for v in g[e]:
+                if v!=le:
+                    cand=1+o[e][0]+o[v][0]-max(o[v][0],o[v][1])
+                    #cand=weight of edge+ ...
+                    if cand>best:
+                        best=cand
+                        winner=v
+
+            o[e][1]=best
+            if best>o[e][0]:
+                ma+=[(e,winner)]
+    return ma

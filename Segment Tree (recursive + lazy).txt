@@ -1,0 +1,41 @@
+def buildst(l,L,i):
+    if l==L:
+        st[i]=[l,l,0,elem(l)]
+        return
+    else:
+        mid=(l+L)//2
+        buildst(mid+1,L,2*i+2)
+        buildst(l,mid,2*i+1)
+    st[i]=[l,L,0,merge(st[2*i+1][-1],st[2*i+2][-1])]
+def pay(i):
+    debt=st[i][2]
+    if debt==0:return
+    st[i][-1][0]+=debt
+    if st[i][0]!=st[i][1]:
+        st[2*i+1][2]+=debt
+        st[2*i+2][2]+=debt
+    st[i][2]=0
+def value(l,L,i):
+    pay(i)
+    nl,nL,debt,nVal=st[i]
+    if l<=nl<=nL<=L:
+        return nVal
+    if nl<=l and nL>=l or nl<=L and nL>=L:
+        return merge(value(l,L,2*i+1),value(l,L,2*i+2))
+    return neutral
+def updateSt(l,L,i,newval):
+    if l>L:return
+    pay(i)
+    
+    nl,nL,debt,nVal=st[i]
+    if l<=nl<=nL<=L:
+        st[i][-1][0]+=newval
+        if nl!=nL:
+            st[2*i+1][2]+=newval
+            st[2*i+2][2]+=newval
+        return
+    if nl<=nL<l or nL>=nl>L:
+        return
+    updateSt(l,L,2*i+1,newval)
+    updateSt(l,L,2*i+2,newval)
+    st[i][-1]=merge(st[2*i+1][-1],st[2*i+2][-1])

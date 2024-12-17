@@ -1,0 +1,97 @@
+class LazySegmentTree:
+    def __init__(self, data, default=-inf, func=max):
+        """initialize the lazy segment tree with data"""
+        self._default = default
+        self._func = func
+
+        self._len = len(data)
+        self._size = _size = 1 << (self._len - 1).bit_length()
+        self._lazy = [0] * (2 * _size)
+
+        self.data = [default] * (2 * _size)
+        self.data[_size:_size + self._len] = data
+        for i in reversed(range(_size)):
+            self.data[i] = func(self.data[i<<1], self.data[i<<1|1])
+
+    def __len__(self):
+        return self._len
+
+    def _push(self, idx):
+        """push query on idx to its children"""
+        # Let the children know of the queries
+        q, self._lazy[idx] = self._lazy[idx], 0
+
+        self._lazy[idx<<1] += q
+        self._lazy[idx<<1|1] += q
+        self.data[idx<<1] += q
+        self.data[idx<<1|1] += q
+
+    def _update(self, idx):
+        """updates the node idx to know of all queries applied to it via its ancestors"""
+        for i in reversed(range(1, idx.bit_length())):
+            self._push(idx >> i)
+
+    def _build(self, idx):
+        """make the changes to idx be known to its ancestors"""
+        idx >>= 1
+        while idx:
+            self.data[idx] = self._func(self.data[idx<<1], self.data[idx<<1|1]) + self._lazy[idx]
+            idx >>= 1
+
+    def add(self, start, stop, value):
+        """lazily add value to [start, stop)"""
+        start = start + self._size
+        stop = stop + self._size
+        cr=cl=False
+        while start < stop:
+            if cl:
+                sp=start-1
+                self.data[sp]=self._func(self.data[sp<<1],self.data[sp<<1|1])+self._lazy[sp]
+            if cr:
+                self.data[stop]=self._func(self.data[stop<<1],self.data[stop<<1|1])+self._lazy[stop]
+            if start & 1:
+                self._lazy[start] += value
+                self.data[start] += value
+                start += 1
+                cl=True
+            if stop & 1:
+                stop -= 1
+                self._lazy[stop] += value
+                self.data[stop] += value
+                cr=True
+            start >>= 1
+            stop >>= 1
+
+        # Tell all nodes above of the updated area of the updates
+        start-=1
+        while stop>0:
+            if cl:
+                self.data[start]=self._func(self.data[start<<1],self.data[start<<1|1])+self._lazy[start]
+            if cr and (not cl or start!=stop):
+                self.data[stop]=self._func(self.data[stop<<1],self.data[stop<<1|1])+self._lazy[stop]
+
+            start>>=1
+            stop>>=1
+    def query(self, start, stop, default=-inf):
+        """func of data[start, stop)"""
+        start += self._size
+        stop += self._size
+
+        # Apply all the lazily stored queries
+        self._update(start)
+        self._update(stop - 1)
+
+        res = default
+        while start < stop:
+            if start & 1:
+                res = self._func(res, self.data[start])
+                start += 1
+            if stop & 1:
+                stop -= 1
+                res = self._func(res, self.data[stop])
+            start >>= 1
+            stop >>= 1
+        return res
+
+    def __repr__(self):
+        return "LazySegmentTree({0})".format(self.data)

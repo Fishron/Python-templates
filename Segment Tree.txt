@@ -1,0 +1,26 @@
+        def buildst(st,l,L,i,merge,elem):
+            if l==L:
+                st[i]=[l,l,elem(l)]
+                return
+            else:
+                mid=(l+L)//2
+                buildst(st,mid+1,L,2*i+1,merge,elem)
+                buildst(st,l,mid,2*i+2,merge,elem)
+            st[i]=[l,L,merge(st[2*i+1][-1],st[2*i+2][-1])]
+        def value(st,l,L,i,merge,neutral):
+            nl,nL,nVal=st[i]
+            if l<=nl<=nL<=L:
+                return nVal
+            if nl<=l and nL>=l or nl<=L and nL>=L:
+                return merge(value(st,l,L,2*i+1,merge,neutral),value(st,l,L,2*i+2,merge,neutral))
+            return neutral
+        def updateSt(st,l,i,newval,merge):
+            nl,nL,nVal=st[i]
+            if l==nl==nL:
+                st[i][-1]=newval
+                return
+            if nl<=nL<l or nL>=nl>l:
+                return
+            updateSt(st,l,2*i+1,newval,merge)
+            updateSt(st,l,2*i+2,newval,merge)
+            st[i][-1]=merge(st[2*i+1][-1],st[2*i+2][-1])

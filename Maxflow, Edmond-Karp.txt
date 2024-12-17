@@ -1,0 +1,28 @@
+        def maxflow(s,t):
+            flux=0
+            while 1:
+                prec={s:None}
+                q=deque([s])
+                while q:
+                    m=q.popleft()
+                    if m==t:
+                        break
+                    for v in vois[m]:
+                        if v not in prec:
+                            prec[v]=m
+                            q.append(v)
+                else:
+                    return (prec,flux)
+                path=[]
+                while m!=None:
+                    path+=[m]
+                    m=prec[m]
+                path=path[::-1]
+                inc=min(vois[path[i]][path[i+1]]for i in range(len(path)-1))
+                flux+=inc
+                for i in range(len(path)-1):
+                    e,a=path[i],path[i+1]
+                    vois[e][a]-=inc
+                    if vois[e][a]==0:
+                        del vois[e][a]
+                    vois[a][e]+=inc

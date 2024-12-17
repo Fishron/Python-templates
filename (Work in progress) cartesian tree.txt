@@ -1,0 +1,24 @@
+#ind,left,right,indparent1,indparentid2
+def cart(l,r):
+    if l==r:
+        return [l,None,None,-1,len(x)]
+    mid=(l+r)//2
+    return merge(cart(l,mid),cart(mid+1,r))
+def merge(a,b):
+    if a==None:return b
+    if b==None:return a
+    if x[a[0]]<x[b[0]]:
+        return [a[0],a[1],merge(a[2],b),a[3],a[4]]
+    else:
+        return [b[0],merge(a,b[1]),b[2],b[3],b[4]]
+o=cart(0,len(x)-1)
+q=deque([(o,"r")])
+val=0
+while q:
+    u,lmove=q.popleft()
+    val+=abs(u[3]-u[0])*abs(u[4]-u[0])*x[u[0]]
+    for v,move in[(u[1],"l"),(u[2],"r")]:
+        if v==None:continue
+        v[3]=u[0]
+        v[4]=u[4-(lmove!=None and move!=lmove)]
+        q.append((v,move))

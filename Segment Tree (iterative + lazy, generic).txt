@@ -1,0 +1,134 @@
+class LazySegmentTree:
+    def __init__(self, data, default=-inf, func=max, defaultlaz=0, modify=lambda x,y:x+y, compolaz=lambda x,y:x+y):
+        """initialize the lazy segment tree with data"""
+        self._default = default
+        self._func = func
+        self._defaultlaz=defaultlaz
+        self._modify=modify
+        self._compolaz=compolaz
+        self._len = len(data)
+        self._size = _size = 1 << (self._len - 1).bit_length()
+        self._lazy = [defaultlaz] * (2 * _size)
+
+        self.data = [default] * (2 * _size)
+        self.data[_size:_size + self._len] = data
+        for i in reversed(range(_size)):
+            self.data[i] = func(self.data[i<<1], self.data[i<<1|1])
+
+    def __len__(self):
+        return self._len
+
+    def _push(self, idx):
+        """push query on idx to its children"""
+        # Let the children know of the queries
+        if self._lazy[idx]!=self._defaultlaz:
+            q, self._lazy[idx] = self._lazy[idx], self._defaultlaz
+
+            self._lazy[idx<<1] = self._compolaz(self._lazy[idx<<1],q)
+            self._lazy[idx<<1|1] = self._compolaz(self._lazy[idx<<1|1],q)
+            self.data[idx<<1] = self._modify(self.data[idx<<1],q)
+            self.data[idx<<1|1] = self._modify(self.data[idx<<1|1],q)
+
+    def _update(self, idx):
+        """updates the node idx to know of all queries applied to it via its ancestors"""
+        for i in reversed(range(1, idx.bit_length())):
+            self._push(idx >> i)
+
+    def _build(self, idx):
+        """make the changes to idx be known to its ancestors"""
+        idx >>= 1
+        while idx:
+            self.data[idx] = self._modify(self._func(self.data[idx<<1], self.data[idx<<1|1]), self._lazy[idx])
+            idx >>= 1
+
+    def mult(self, start, stop, value):
+        """lazily add value to [start, stop)"""
+        start = start + self._size
+        stop = stop + self._size
+        modif=self._modify
+        compo=self._compolaz
+        cr=cl=False
+        
+        while start < stop:
+            if cl:
+                sp=start-1
+                self.data[sp]=modif(self._func(self.data[sp<<1],self.data[sp<<1|1]),self._lazy[sp])
+            if cr:
+                self.data[stop]=modif(self._func(self.data[stop<<1],self.data[stop<<1|1]),self._lazy[stop])
+            if start & 1:
+                self._lazy[start] = compo(self._lazy[start],value)
+                self.data[start] = modif(self.data[start],value)
+                start += 1
+                cl=True
+            if stop & 1:
+                stop -= 1
+                self._lazy[stop] = compo(self._lazy[stop],value)
+                self.data[stop] = modif(self.data[stop],value)
+                cr=True
+            start >>= 1
+            stop >>= 1
+
+        # Tell all nodes above of the updated area of the updates
+        start-=1
+        while stop>0:
+            if cl:
+                self.data[start]=modif(self._func(self.data[start<<1],self.data[start<<1|1]),self._lazy[start])
+            if cr and (not cl or start!=stop):
+                self.data[stop]=modif(self._func(self.data[stop<<1],self.data[stop<<1|1]),self._lazy[stop])
+
+            start>>=1
+            stop>>=1
+    def query(self, start, stop):
+        """func of data[start, stop)"""
+        if stop<=start:
+            return self._default
+        start += self._size
+        stop += self._size
+        default=self._default
+        # Apply all the lazily stored queries
+        self._update(start)
+        self._update(stop - 1)
+
+        resl=resr=default
+        while start < stop:
+            if start & 1:
+                resl = self._func(resl, self.data[start])
+                start += 1
+            if stop & 1:
+                stop -= 1
+                resr = self._func(self.data[stop],resr)
+            start >>= 1
+            stop >>= 1
+        return self._func(resl,resr)
+
+    def __repr__(self):
+        return f"LazySegmentTree:\n values:{[self.query(i,i+1) for i in range(self._len)]}\n value for whole array:{self.data[1]}\n value for first (bigger) half: {self.query(0,self._len//2+1)}\n value for second half {self.query(self._len//2+1,self._len)}"
+
+defaultlaz=1
+compolaz=lambda x,y:x*y
+def modify(x,y):
+    if y==0:
+        return(0,x[-1],0,x[-1],x[-1])
+    if y>0:
+        return (x[0]*y,x[1],x[2]*y,x[3],x[-1])
+    return (x[2]*y,x[3],x[0]*y,x[1],x[-1])
+def merge(x,y):
+    if x==None:return y
+    if y==None:return x
+    a,b,c,d,e=x
+    A,B,C,D,E=y
+    if a==A:
+        nb=B+b
+        na=a
+    else:
+        nb=b if a<A else B
+        na=a if a<A else A
+    if c==C:
+        nd=d+D
+        nc=c
+    else:
+        nd=d if c>C else D
+        nc=c if c>C else C
+    return (na,nb,nc,nd,e+E) #min,minocc,max,maxocc,len
+neutral=None
+st=LazySegmentTree(data=[(2,1,2,1,1)]*20,defaultlaz=defaultlaz,compolaz=compolaz,modify=modify,func=merge,default=neutral)

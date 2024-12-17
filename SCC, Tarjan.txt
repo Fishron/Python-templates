@@ -1,0 +1,27 @@
+def tarjan(x):
+    if x in s:return
+    idx[x]=idbox[0]
+    link[x]=idbox[0]
+    idbox[0]+=1
+    s.add(x)
+    q.append(x)
+    for v in d[x]:
+        if idx[v]==None or v in s:
+            tarjan(v)
+            link[x]=min(link[v],link[x])
+    if idx[x]==link[x]:
+        while 1:
+            el=q.pop()
+            unioncolor(el,x)
+            s.discard(el)
+            if el==x:break
+    idbox=[0]
+    idx=[None]*(2*w+1)
+    link=[None]*(2*w+1)
+    dad=[*range(w*2+1)]
+    rank=[0]*(2*w+1)
+    s=set()
+    q=[]
+    for e in range(1,w*2+1):
+        if idx[e]==None:
+            tarjan(e)

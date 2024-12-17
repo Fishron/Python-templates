@@ -1,0 +1,30 @@
+        class Trie:
+            def __init__(self,val="",ind=0,word=""):
+                self.vois={}
+                self.val=val
+                self.ind=ind
+                self.word=word
+            def insert(self, word: str, ind,i=0) -> None:
+                if word=="":return
+                if i==len(word):
+                    if not self.word:
+                        self.word=word
+                        self.ind=ind
+                    return
+                wi=word[i]
+                child=Trie(val=wi)
+                if wi not in self.vois:
+                    self.vois[wi]=child
+                self.vois[wi].insert(word,ind,i+1)
+        def sons(nx):
+            if nx in mem:return mem[nx]
+            if not nx:
+                mem[nx]=set()
+                return set()
+            if nx.word:
+                mem[nx]={nx}
+                return {nx}
+            res=set()
+            for v in nx.vois.values():res|=sons(v)
+            mem[nx]=res
+            return res

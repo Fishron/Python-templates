@@ -1,0 +1,15 @@
+        def z(s):
+            res=[-1]+[0]*(len(s)-1)
+            L=R=0
+            for i in range(1,len(s)):
+                cur=i-L
+                if res[cur]<R-i+1:
+                    res[i]=res[cur]
+                else:
+                    L=i
+                    R=max(i,R)
+                    while R<len(s)and s[R-L]==s[R]:
+                        R+=1
+                    R-=1
+                    res[i]=R-L+1
+            return res
