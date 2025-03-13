@@ -41,14 +41,16 @@ class LazySegmentTree:
             self.data[idx] = self._modify(self._func(self.data[idx<<1], self.data[idx<<1|1]), self._lazy[idx])
             idx >>= 1
 
-    def mult(self, start, stop, value):
-        """lazily add value to [start, stop)"""
+    def change(self, start, stop, value):
+        """lazily change value to [start, stop)"""
         start = start + self._size
         stop = stop + self._size
         modif=self._modify
         compo=self._compolaz
         cr=cl=False
-        
+        #if compolaz isn't commutative:
+        #self._update(start)
+        #self._update(stop - 1)
         while start < stop:
             if cl:
                 sp=start-1
@@ -104,6 +106,7 @@ class LazySegmentTree:
     def __repr__(self):
         return f"LazySegmentTree:\n values:{[self.query(i,i+1) for i in range(self._len)]}\n value for whole array:{self.data[1]}\n value for first (bigger) half: {self.query(0,self._len//2+1)}\n value for second half {self.query(self._len//2+1,self._len)}"
 
+#-----example 1----------min,minocc,max,maxocc,len, a*x changes
 defaultlaz=1
 compolaz=lambda x,y:x*y
 def modify(x,y):
@@ -132,3 +135,18 @@ def merge(x,y):
     return (na,nb,nc,nd,e+E) #min,minocc,max,maxocc,len
 neutral=None
 st=LazySegmentTree(data=[(2,1,2,1,1)]*20,defaultlaz=defaultlaz,compolaz=compolaz,modify=modify,func=merge,default=neutral)
+
+#--------example 2-------------sum%mod,len ; ax+b changes
+mod=998244353
+defaultlaz=(1,0)
+def compolaz(x,y):
+    a,b=x
+    a2,b2=y
+    return (a*a2%mod,(b*a2+b2)%mod)
+def modify(x,y):
+    a,b=y
+    val,l=x
+    return ((val*a + b*l)%mod,l)
+def merge(x,y):
+    return ((x[0]+y[0])%mod,x[1]+y[1])
+neutral=(0,0)
