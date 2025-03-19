@@ -1,12 +1,28 @@
-M=2**63-1
-def f(x):
-    return ord(x)-ord("a")+428
-def radl(x,c,p):
-    x+=c*p
-    x%=M
-    return x
-def radr(x,c):
-    x*=27
-    x+=c
-    x%=M
-    return x
+f=lambda x:ord(x)-96
+
+base=31
+mod=randint(2**61,2**62)^time_ns()
+N=10**6
+def radr(x,v):
+    return (x*base+v)%mod
+
+def adr(x,y,p):
+    return (x*p+y)%mod
+def adl(x,y,p):
+    return (x+y*p)%mod
+def subr(x,y,p):
+    return (x*p-y)%mod
+def subl(x,y,p):
+    return (x-y*p)%mod
+
+P=[cur:=1]+[cur:=(cur*base)%mod for __ in range(N)]
+
+ps=[cur:=0]+[cur:=radr(cur,f(e))for e in s]
+ps2=[cur:=0]+[cur:=radr(cur,f(e))for e in s[::-1]]
+
+def ha(i,j):
+    return subl(ps[j+1],ps[i],P[j+1-i])
+def rha(i,j):
+    return subl(ps2[~i],ps2[~(j+1)],P[j+1-i])
+def palin(i,j):
+    return ha(i,j)==rha(i,j)
