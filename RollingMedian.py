@@ -58,9 +58,10 @@ class RollingMedian():
         return self.hm[0]
 
     def __repr__(self):
+        self.clean()
         return f"indexes considered in upper (bigger) part {self.sm}\n\
         indexes considered in lower part {self.sM}\n\
         upper part heap {self.hm}\n\
         lower part heap {self.hM}\n\
-        upper sum {self.sumUnder}\n\
-        lower sum {self.sumOver}\n"
+        upper sum {self.sumOver}\n\
+        lower sum {self.sumUnder}\n"
